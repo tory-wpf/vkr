@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">vkr</string>
+    <string name="popular_requests">Popular requests</string>
+    <string name="apple">Apple</string>
+    <string name="search_history">You’ve searched for this</string>
+    <string name="stocks">Stocks</string>
+    <string name="show_more">show more</string>
+    <string name="find_company_or_ticker">Find company or ticker</string>
+    <string-array name="popular_search_items">
+        <item>Apple</item>
+        <item>Microsoft</item>
+        <item>Tesla</item>
+        <item>EA</item>
+        <item>Qcom</item>
+        <item>NFLX</item>
+        <item>AMD</item>
+        <item>Intel</item>
+        <item>Facebook</item>
+        <item>Amazon</item>
+    </string-array>
+</resources>
