@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name = "MDS_YANDEX_TEST"
+rootProject.name = "vkr"
