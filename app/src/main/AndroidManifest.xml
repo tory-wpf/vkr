@@ -14,7 +14,8 @@
         android:theme="@style/Theme.vkr">
         <activity android:name="com.example.vkr.presentation.search.view.SearchStocksActivity"
             android:windowSoftInputMode="stateVisible"/>
-        <activity android:name="com.example.vkr.presentation.stocks.MainActivity">
+        <activity android:name="com.example.vkr.presentation.stocks.MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

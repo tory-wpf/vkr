@@ -30,7 +30,7 @@ class StocksPresenter: BaseStocksPresenter<IStocksFragment>(),IStocksPresenter {
                 indexSymbol,
                 data = {
                     launch {
-                        it?.constituents?.forEach {
+                        it?.constituents?.sorted()?.forEach {
                             val stock: Stock = Stock(it)
                             stockList.add(stock)
                         }
