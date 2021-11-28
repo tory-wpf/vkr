@@ -5,9 +5,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.SearchView
 import android.widget.Toast
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import com.example.vkr.R
 import com.example.vkr.databinding.ActivitySearchStocksBinding
 import com.example.vkr.domain.entity.Stock
+import com.example.vkr.domain.utils.Constants.indexSymbol
 import com.example.vkr.domain.utils.hide
 import com.example.vkr.domain.utils.show
 import com.example.vkr.presentation.search.adapter.SearchPopularRequestsAdapter
@@ -51,6 +54,16 @@ class SearchStocksActivity : AppCompatActivity(), StocksRecyclerAdapter.StockCli
         historyAdapter = SearchPopularRequestsAdapter(historyList.toMutableList(), this)
         binding.historyRecyclerView.adapter = historyAdapter
 
+    }
+
+    override fun onBackPressed() {
+        if (binding.popularAndHistory.isVisible)
+            super.onBackPressed()
+        else {
+            binding.searchView.setQuery("", false)
+            binding.popularAndHistory.show()
+            binding.stocksFounded.hide()
+        }
     }
 
     private fun bindPopularRequest(){
@@ -101,7 +114,7 @@ class SearchStocksActivity : AppCompatActivity(), StocksRecyclerAdapter.StockCli
         stock: Stock?,
         holder: StocksRecyclerAdapter.StocksViewHolder
     ) {
-        (presenter as SearchStocksPresenter).onFavouriteIconClick(stock, holder)
+        (presenter as SearchStocksPresenter).onFavouriteIconClick(indexSymbol, stock, holder)
     }
 
     override fun onSnippetClick() {

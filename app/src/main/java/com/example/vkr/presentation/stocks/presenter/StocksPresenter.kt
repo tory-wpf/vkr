@@ -2,6 +2,7 @@ package com.example.vkr.presentation.stocks.presenter
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import com.example.vkr.R
 import com.example.vkr.data.repository.IStocksRepository
 import com.example.vkr.data.repository.StocksRepository
@@ -15,29 +16,43 @@ import com.finnhub.api.models.CompanyProfile2
 import com.finnhub.api.models.Quote
 import kotlinx.coroutines.*
 
-class StocksPresenter: BaseStocksPresenter<IStocksFragment>(),IStocksPresenter {
+class StocksPresenter : BaseStocksPresenter<IStocksFragment>(), IStocksPresenter {
 
     private val repo: IStocksRepository = StocksRepository()
     private val realmRepo: IRealmStocksRepository = RealmStocksRepository()
 
     companion object {
-        val stockList: MutableList<Stock> = mutableListOf()
+        val stockListNDX: MutableList<Stock> = mutableListOf()
+        val stockListGSPC: MutableList<Stock> = mutableListOf()
+        val stockListDJI: MutableList<Stock> = mutableListOf()
+        var currentIndex = "NDX"
     }
 
-    override fun bindStockList(indexSymbol: String) {
-        CoroutineScope(Dispatchers.IO).launch {
+    override fun getDefaultStockList() {
+        getView()?.bindStocks(stockListNDX as? MutableList<Stock>)
+    }
+
+    override fun bindStockLists() {
+        bindStockList("^NDX", stockListNDX)
+        bindStockList("^GSPC", stockListGSPC)
+        bindStockList("^DJI", stockListDJI)
+    }
+
+    private fun bindStockList(indexSymbol: String, list: MutableList<Stock>) {
+        CoroutineScope(Dispatchers.IO).launch() {
             repo.getIndicesConstituents(
                 indexSymbol,
                 data = {
                     launch {
                         it?.constituents?.sorted()?.forEach {
                             val stock: Stock = Stock(it)
-                            stockList.add(stock)
+                            withContext(Dispatchers.Main) {
+                                if (realmRepo.isStockExist(it))
+                                    stock.isFavourite = true
+                            }
+                            list.add(stock)
                         }
-                        withContext(Dispatchers.Main) {
-                            getView()?.bindStocks(stockList as? MutableList<Stock>)
-                        }
-                        bindStocks()
+                        bindStocks(indexSymbol, list)
                     }
                 }, error = {
                     Handler(Looper.getMainLooper()).post {
@@ -47,7 +62,8 @@ class StocksPresenter: BaseStocksPresenter<IStocksFragment>(),IStocksPresenter {
         }
     }
 
-    private suspend fun bindStocks() {
+    private suspend fun bindStocks(indexSymbol: String, stockList: MutableList<Stock>) {
+
         for (i in 0 until stockList.size) {
             while (stockList[i].currentPrice == null) {
                 val stockPrice: Quote? = getStockPrice(stockList[i].ticker ?: "")
@@ -61,7 +77,7 @@ class StocksPresenter: BaseStocksPresenter<IStocksFragment>(),IStocksPresenter {
             }
 
             withContext(Dispatchers.Main) {
-                realmRepo.isStockExist(stockList[i].ticker,
+                realmRepo.isStockExistAsync(stockList[i].ticker,
                     data = {
                         if (it == true) {
                             stockList[i].isFavourite = it == true
@@ -69,7 +85,8 @@ class StocksPresenter: BaseStocksPresenter<IStocksFragment>(),IStocksPresenter {
                             bindFavourites()
                         }
                     }, error = {})
-                getView()?.getRVAdapter()?.updateItem(i)
+                if (currentIndex == indexSymbol)
+                    getView()?.getRVAdapter()?.updateItem(i, stockList)
             }
         }
     }
@@ -102,10 +119,11 @@ class StocksPresenter: BaseStocksPresenter<IStocksFragment>(),IStocksPresenter {
     }
 
     override fun onFavouriteIconClick(
+        indexSymbol: String,
         stock: Stock?,
         holder: StocksRecyclerAdapter.StocksViewHolder
     ) {
-        realmRepo.isStockExist(stock?.ticker,
+        realmRepo.isStockExistAsync(stock?.ticker,
             data = {
                 if (it == true)
                     realmRepo.deleteFavourite(stock,
@@ -117,11 +135,37 @@ class StocksPresenter: BaseStocksPresenter<IStocksFragment>(),IStocksPresenter {
                             localStocksFragment.updateStocks()
                             val stocksFragment =
                                 adapter.getItem(0) as IStocksFragment
+                            val lists = stockListDJI + stockListGSPC + stockListNDX
                             val stockForUpdate =
-                                stockList.filter { it.ticker == stock?.ticker }.first()
-                            stockForUpdate.isFavourite = false
-                            stocksFragment.getRVAdapter()
-                                .updateItem(stockList.indexOf(stockForUpdate))
+                                lists.filter { it.ticker == stock?.ticker }.firstOrNull()
+                            stockForUpdate?.isFavourite = false
+
+                            val listDJI =
+                                if (stockListDJI.indexOf(stockForUpdate) == -1) null else stockListDJI
+                            val listGSPC =
+                                if (stockListGSPC.indexOf(stockForUpdate) == -1) null else stockListGSPC
+                            val listNDX =
+                                if (stockListNDX.indexOf(stockForUpdate) == -1) null else stockListNDX
+
+                            var stockIndex = -1
+                            var stockList = mutableListOf<Stock>()
+                            when {
+                                listDJI != null -> {
+                                    stockList = stockListDJI
+                                    stockIndex = stockListDJI.indexOf(stockForUpdate)
+                                }
+                                listGSPC != null -> {
+                                    stockList = stockListGSPC
+                                    stockIndex = stockListGSPC.indexOf(stockForUpdate)
+                                }
+                                listNDX != null -> {
+                                    stockList = stockListNDX
+                                    stockIndex = stockListNDX.indexOf(stockForUpdate)
+                                }
+                            }
+                            if (indexSymbol == currentIndex)
+                                stocksFragment.getRVAdapter()
+                                    .updateItem(stockIndex, stockList)
                         },
                         error = {})
                 else

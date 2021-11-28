@@ -32,9 +32,4 @@ class StocksRepository : IStocksRepository {
             .onSuccess { data(it) }
             .onFailure { error(it.message.toString()) }
     }
-
-    fun test (a:String): Unit {
-
-    }
-
 }

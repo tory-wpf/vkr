@@ -1,5 +1,6 @@
 package com.example.vkr.data.repository.local
 
+import android.util.Log
 import com.example.vkr.data.repository.DataHandler
 import com.example.vkr.data.repository.ErrorHandler
 import com.example.vkr.data.repository.SuccessHandler
@@ -8,7 +9,7 @@ import io.realm.Realm
 import io.realm.RealmConfiguration
 
 class RealmStocksRepository : IRealmStocksRepository {
-    private val realmConfig = RealmConfiguration.Builder().deleteRealmIfMigrationNeeded().build()
+    private val realmConfig = RealmConfiguration.Builder().deleteRealmIfMigrationNeeded().allowWritesOnUiThread(true).build()
 
     private val realm = Realm.getInstance(realmConfig)
 
@@ -47,8 +48,13 @@ class RealmStocksRepository : IRealmStocksRepository {
         })
     }
 
-    override fun isStockExist(ticker: String?, data: DataHandler<Boolean>, error: ErrorHandler) {
+    override fun isStockExistAsync(
+        ticker: String?,
+        data: DataHandler<Boolean>,
+        error: ErrorHandler
+    ) {
         var stock: Stock? = null
+
         realm.executeTransactionAsync({
             stock = it.where(Stock::class.java).equalTo("ticker", ticker).findFirst()
         }, {
@@ -56,6 +62,14 @@ class RealmStocksRepository : IRealmStocksRepository {
         }, {
             error(it.message.toString())
         })
+    }
+
+    override fun isStockExist(ticker: String): Boolean {
+        var stock: Stock? = null
+        realm.executeTransaction {
+            stock = it.where(Stock::class.java).equalTo("ticker", ticker).findFirst()
+        }
+        return stock?.let { true } ?: false
     }
 
     override fun update(stock: Stock?, success: SuccessHandler, error: ErrorHandler) {

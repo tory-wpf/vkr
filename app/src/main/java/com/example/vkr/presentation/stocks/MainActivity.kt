@@ -4,7 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.viewpager.widget.ViewPager
+import com.example.vkr.R
 import com.example.vkr.databinding.ActivityMainBinding
 import com.example.vkr.presentation.stocks.adapters.StocksViewPagerAdapter
 import com.example.vkr.presentation.search.view.SearchStocksActivity
@@ -39,4 +43,5 @@ class MainActivity : AppCompatActivity(), IMainActivity {
             )
         }
     }
+
 }

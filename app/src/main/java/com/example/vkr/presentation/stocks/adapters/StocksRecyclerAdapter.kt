@@ -61,8 +61,8 @@ class StocksRecyclerAdapter(
         }
     }
 
-    fun updateItem(position: Int){
-        list?.set(position, StocksPresenter.stockList[position])
+    fun updateItem(position: Int, stockList: MutableList<Stock>){
+        list?.set(position, stockList[position])
         notifyItemChanged(position)
     }
 

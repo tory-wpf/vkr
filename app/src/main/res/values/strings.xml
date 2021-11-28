@@ -6,6 +6,7 @@
     <string name="stocks">Stocks</string>
     <string name="show_more">show more</string>
     <string name="find_company_or_ticker">Find company or ticker</string>
+    <string name="current_index">Current index:</string>
     <string-array name="popular_search_items">
         <item>Apple</item>
         <item>Microsoft</item>
@@ -18,4 +19,10 @@
         <item>Facebook</item>
         <item>Amazon</item>
     </string-array>
+    <string-array name="indexes">
+        <item>NDX</item>
+        <item>GSPC</item>
+        <item>DJI</item>
+    </string-array>
+
 </resources>

@@ -17,24 +17,26 @@ import java.util.*
 class SearchStocksPresenter: BaseStocksPresenter<ISearchStocksActivity>(), ISearchStocksPresenter {
 
     private val realmRepo: IRealmStocksRepository = RealmStocksRepository()
+    private val stockList = StocksPresenter.stockListDJI + StocksPresenter.stockListGSPC + StocksPresenter.stockListNDX
 
     override fun onFavouriteIconClick(
+        indexSymbol: String,
         stock: Stock?,
         holder: StocksRecyclerAdapter.StocksViewHolder
     ) {
-        realmRepo.isStockExist(stock?.ticker,
+        realmRepo.isStockExistAsync(stock?.ticker,
             data = {
                 if (it == true)
                     realmRepo.deleteFavourite(stock,
                         success = {
                             holder.changeIcon(R.drawable.ic_no_favourite)
-                            StocksPresenter.stockList.filter { it.ticker == stock?.ticker }.first().isFavourite = false
+                            stockList.filter { it.ticker == stock?.ticker }.first().isFavourite = false
                         },
                         error = {})
                 else
                     realmRepo.addToFavourite(stock,
                         success = {
-                            StocksPresenter.stockList.filter { it.ticker == stock?.ticker }.first().isFavourite = true
+                            stockList.filter { it.ticker == stock?.ticker }.first().isFavourite = true
                             holder.changeIcon(R.drawable.ic_favourite)
                         }, error = {})
             }, error = {})
@@ -42,7 +44,7 @@ class SearchStocksPresenter: BaseStocksPresenter<ISearchStocksActivity>(), ISear
 
     override fun bindFoundedStockList(query: String) {
         val queryLower = query.toLowerCase(Locale.getDefault())
-        val foundedList = StocksPresenter.stockList.filter {
+        val foundedList = stockList.distinctBy { it.ticker }.filter {
             (it.ticker?.toLowerCase(Locale.getDefault())?.startsWith(queryLower) ?: false) ||
                     (it.name?.toLowerCase(Locale.getDefault())?.startsWith(queryLower) ?: false)
         }

@@ -9,6 +9,7 @@ interface IRealmStocksRepository {
     fun addToFavourite(stock: Stock?, success: SuccessHandler, error: ErrorHandler)
     fun getFavourites(data: DataHandler<List<Stock>>, error: ErrorHandler)
     fun deleteFavourite(stock: Stock?, success: SuccessHandler, error: ErrorHandler)
-    fun isStockExist(ticker: String?, data: DataHandler<Boolean>, error: ErrorHandler)
+    fun isStockExistAsync(ticker: String?, data: DataHandler<Boolean>, error: ErrorHandler)
+    fun isStockExist(ticker: String): Boolean
     fun update(stock: Stock?, success: SuccessHandler, error: ErrorHandler)
 }
